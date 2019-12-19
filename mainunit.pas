@@ -11,9 +11,14 @@ type
     GoButton: TButton;
     LabelThreads: TLabel;
     LabelCounter: TLabel;
+    ThreadsEdit: TEdit;
+    ThreadsLabel: TLabel;
+    URLEdit: TEdit;
+    Label1: TLabel;
     procedure GoButtonClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
   public
@@ -52,7 +57,6 @@ var
   bufLen     : DWORD;
   Tmp        : DWord;
   pReferer   : PChar;
-  URL        : String;
   Referer    : String;
   fStream    : TMemoryStream;
   Status     : String;
@@ -64,9 +68,9 @@ begin
   fStream := TMemoryStream.Create;
   Referer := '';
   TimeOut := 0;
-  URL     := 'http://localhost:8081/v/clubhouse/gallery?code=GLR.000B401F.00009C0B.0332.9C6D';
+  //URL     := 'http://localhost:8081/v/clubhouse/';
 
-  NetHandle := InternetOpen('bla bla',INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
+  NetHandle := InternetOpen('browser identifier',INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
   If Assigned(NetHandle) then
   Begin
     If TimeOut > 0 then
@@ -83,7 +87,7 @@ begin
     end
     Else pReferer := nil;
 
-    UrlHandle := InternetOpenUrl(NetHandle,PChar(URL),pReferer,Length(Referer),INTERNET_FLAG_RELOAD,0);
+    UrlHandle := InternetOpenUrl(NetHandle,PChar(MainForm.URLEdit.Text),pReferer,Length(Referer),INTERNET_FLAG_RELOAD,0);
     If Assigned(UrlHandle) then
     Begin
       tmp    := 0;
@@ -127,11 +131,11 @@ end;
 
 
 procedure TMainForm.GoButtonClick(Sender: TObject);
-const
-  threadCount : Integer = 100;
 var
-  I : Integer;
+  I           : Integer;
+  threadCount : Integer;
 begin
+  threadCount := StrToIntDef(ThreadsEdit.Text,1);
   Inc(globalThreadCounter,threadCount);
   For I := 0 to threadCount-1 do TLoadTestThread.Create(False);
 end;
@@ -144,6 +148,15 @@ end;
 procedure TMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   csWork.Free;
+end;
+
+procedure TMainForm.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  If Key = #27 then
+  Begin
+    Close;
+    Key := #0;
+  End;
 end;
 
 end.
